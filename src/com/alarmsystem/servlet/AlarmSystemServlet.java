@@ -33,17 +33,16 @@ public class AlarmSystemServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		
-		
-		Cluster cluster = Cluster.builder().addContactPoint("localhost").build();
+		Cluster cluster = Cluster.builder().addContactPoints("192.168.29.101","192.168.29.102").build();
 		
 		Session session = cluster.connect();
 		
 		String homeId = request.getParameter("h_id");
 		String queryString = "SELECT datetime, event, code_used FROM home_security.activity WHERE home_id = '" + homeId + "'";
+		String queryString_hometable = "SELECT contact_name, address, city, state, zip FROM home_security.home WHERE home_id = '" + homeId + "'";
 		
 		ResultSet result = session.execute(queryString);
+		ResultSet result_hometable = session.execute(queryString_hometable);
 		
 		PrintWriter out = response.getWriter();
 		
@@ -71,6 +70,14 @@ public class AlarmSystemServlet extends HttpServlet {
 		}		
 		else
 		{
+			for (Row row : result_hometable)
+			{
+			   out.println("<p>");
+			   out.println("<b>" + row.getString("contact_name") + "</b>, ");
+			   out.println(row.getString("address") + ", " + row.getString("city") + ", " + row.getString("state") + ", " + row.getString("zip")); 
+			   out.println("</p>");
+			}
+			
 			out.println("<table style=\"font:14px verdana,arial,sans-serif\" cellpadding=\"4\">");
 		
 			for (Row row : result)
@@ -84,8 +91,6 @@ public class AlarmSystemServlet extends HttpServlet {
 		}
 
 		out.println("</body></html>");
-
-		
 		
 	}
 
